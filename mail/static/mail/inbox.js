@@ -62,6 +62,7 @@ async function load_mailbox(mailbox) {
 
 function renderMail(mail) {
   const container = document.createElement('div');
+  container.classList.add(mail.read ? 'hasRead' : 'emailRow');
 
   const sender = document.createElement('span');
   sender.textContent = mail.sender;
@@ -92,6 +93,11 @@ async function openEmail(id) {
 
   const response = await fetch(`/emails/${id}`);
   const mail = await response.json();
+
+  await fetch(`/emails/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({ read: true })
+  });
 
   const container = document.createElement('div');
 
