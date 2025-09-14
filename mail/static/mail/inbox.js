@@ -64,8 +64,8 @@ function renderMail(mail) {
   const sender = document.createElement('span');
   sender.textContent = mail.sender;
 
-  const body = document.createElement('span');
-  body.textContent = mail.body;
+  const subject = document.createElement('span');
+  subject.textContent = mail.subject;
 
   const timestamp = document.createElement('span');
   timestamp.textContent = mail.timestamp;
