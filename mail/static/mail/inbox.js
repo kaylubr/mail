@@ -70,6 +70,6 @@ function renderMail(mail) {
   const timestamp = document.createElement('span');
   timestamp.textContent = mail.timestamp;
 
-  container.append(sender, body, timestamp);
+  container.append(sender, subject, timestamp);
   document.querySelector('#emails-view').append(container);
 }
