@@ -16,10 +16,30 @@ function compose_email() {
   document.querySelector('#emails-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'block';
 
+  const form = document.querySelector('#compose-form');
+  const recipients = document.querySelector('#compose-recipients');
+  const subject = document.querySelector('#compose-subject');
+  const body = document.querySelector('#compose-body');
+  
   // Clear out composition fields
-  document.querySelector('#compose-recipients').value = '';
-  document.querySelector('#compose-subject').value = '';
-  document.querySelector('#compose-body').value = '';
+  recipients.value = '' 
+  subject.value = '' 
+  body.value = '' 
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const response = await fetch('/emails', {
+      method: 'POST',
+      body: JSON.stringify({
+        recipients: recipients.value,
+        subject: subject.value,
+        body: body.value,
+      })
+    });
+
+    const data = await response.json(); // Text for status later
+    load_mailbox('inbox');
+  });
 }
 
 function load_mailbox(mailbox) {
