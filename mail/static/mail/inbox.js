@@ -14,6 +14,7 @@ function compose_email() {
 
   // Show compose view and hide other views
   document.querySelector('#emails-view').style.display = 'none';
+  document.querySelector('#email-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'block';
 
   const form = document.querySelector('#compose-form');
@@ -46,6 +47,7 @@ async function load_mailbox(mailbox) {
   
   // Show the mailbox and hide other views
   document.querySelector('#emails-view').style.display = 'block';
+  document.querySelector('#email-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'none';
 
   // Show the mailbox name
@@ -70,6 +72,44 @@ function renderMail(mail) {
   const timestamp = document.createElement('span');
   timestamp.textContent = mail.timestamp;
 
+  container.addEventListener('click', () => {
+    openEmail(mail.id);
+  })
+
   container.append(sender, subject, timestamp);
   document.querySelector('#emails-view').append(container);
+}
+
+async function openEmail(id) {
+  // Reset email view
+  const emailContainer = document.querySelector('#email-view');
+  emailContainer.replaceChildren();
+
+  // Show the email and hide other views
+  document.querySelector('#email-view').style.display = 'block';
+  document.querySelector('#emails-view').style.display = 'none';
+  document.querySelector('#compose-view').style.display = 'none';
+
+  const response = await fetch(`/emails/${id}`);
+  const mail = await response.json();
+
+  const container = document.createElement('div');
+
+  const sender = document.createElement('p');
+  sender.textContent = mail.sender;
+
+  const recipients = document.createElement('p');
+  recipients.textContent = mail.recipients;
+
+  const body = document.createElement('p');
+  body.textContent = body.recipients;
+
+  const subject = document.createElement('p');
+  subject.textContent = mail.subject;
+
+  const timestamp = document.createElement('p');
+  timestamp.textContent = mail.timestamp;
+
+  container.append(sender, recipients, body, subject, timestamp);
+  emailContainer.append(container);
 }
