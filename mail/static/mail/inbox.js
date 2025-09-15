@@ -4,29 +4,46 @@ document.addEventListener('DOMContentLoaded', function() {
   document.querySelector('#inbox').addEventListener('click', () => load_mailbox('inbox'));
   document.querySelector('#sent').addEventListener('click', () => load_mailbox('sent'));
   document.querySelector('#archived').addEventListener('click', () => load_mailbox('archive'));
-  document.querySelector('#compose').addEventListener('click', compose_email);
+  document.querySelector('#compose').addEventListener('click', () => compose_email('compose'));
 
   // By default, load the inbox
   load_mailbox('inbox');
 });
 
-function compose_email() {
+function compose_email(typeOfEmail, mail = null) {
 
   // Show compose view and hide other views
   document.querySelector('#emails-view').style.display = 'none';
   document.querySelector('#email-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'block';
 
+  const header = document.querySelector('#compose-view > h3');
   const form = document.querySelector('#compose-form');
   const recipients = document.querySelector('#compose-recipients');
   const subject = document.querySelector('#compose-subject');
   const body = document.querySelector('#compose-body');
   
-  // Clear out composition fields
-  recipients.value = '' 
-  subject.value = '' 
-  body.value = '' 
+  if (typeOfEmail === 'compose') {
+    header.textContent = 'New Email';
 
+    // Clear out composition fields
+    recipients.value = '' 
+    recipients.disabled = false;
+    subject.value = ''
+    subject.disabled = false; 
+    body.value = '';
+
+  } else if (typeOfEmail === 'reply') {
+    header.textContent = 'Reply';
+
+    // Pre define inputs for reply
+    recipients.value = mail.sender;
+    recipients.disabled = true;
+    subject.value = formatSubject(mail.subject);
+    subject.disabled = true;
+    body.value = `<<< On ${mail.timestamp} ${mail.sender} wrote: ${mail.body} >>>\n\n`;
+  }
+  
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
     const response = await fetch('/emails', {
@@ -108,24 +125,41 @@ async function openEmail(id) {
   recipients.textContent = mail.recipients;
 
   const body = document.createElement('p');
-  body.textContent = body.recipients;
+  body.textContent = mail.body;
 
   const subject = document.createElement('p');
   subject.textContent = mail.subject;
 
   const timestamp = document.createElement('p');
   timestamp.textContent = mail.timestamp;
+  
+  container.append(sender, recipients, subject, body, timestamp);
 
-  const archiveBtn = document.createElement('button');
-  archiveBtn.textContent = mail.archived ? 'Unarchive' : 'Archive';
-  archiveBtn.addEventListener('click', async () => {
-    await fetch(`/emails/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify({ archived: !mail.archived })
+  if (mail.sender !== document.querySelector('#currentUser').textContent) {
+    const archiveBtn = document.createElement('button');
+    archiveBtn.textContent = mail.archived ? 'Unarchive' : 'Archive';
+    archiveBtn.addEventListener('click', async () => {
+      await fetch(`/emails/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ archived: !mail.archived })
+      });
+      load_mailbox('inbox');
     });
-    load_mailbox('inbox');
-  })
 
-  container.append(sender, recipients, body, subject, timestamp, archiveBtn);
+    const replyBtn = document.createElement('button');
+    replyBtn.textContent = 'Reply';
+    replyBtn.addEventListener('click', async () => {
+      compose_email('reply', mail);
+    });
+
+    container.append(archiveBtn, replyBtn);
+  }
+
   emailContainer.append(container);
+}
+
+function formatSubject(subject) {
+  if (!(subject.toLowerCase().startsWith('re: '))) {
+    return `Re: ${subject}`;
+  }
 }
