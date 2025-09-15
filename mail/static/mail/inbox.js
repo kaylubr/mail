@@ -116,6 +116,16 @@ async function openEmail(id) {
   const timestamp = document.createElement('p');
   timestamp.textContent = mail.timestamp;
 
-  container.append(sender, recipients, body, subject, timestamp);
+  const archiveBtn = document.createElement('button');
+  archiveBtn.textContent = mail.archived ? 'Unarchive' : 'Archive';
+  archiveBtn.addEventListener('click', async () => {
+    await fetch(`/emails/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ archived: !mail.archived })
+    });
+    load_mailbox('inbox');
+  })
+
+  container.append(sender, recipients, body, subject, timestamp, archiveBtn);
   emailContainer.append(container);
 }
