@@ -2,13 +2,13 @@
 
 {% block body %}
 
-    <h2>Register</h2>
+    <h2 id="registerHeader">Register</h2>
 
     {% if message %}
         <div>{{ message }}</div>
     {% endif %}
 
-    <form action="{% url 'register' %}" method="post">
+    <form action="{% url 'register' %}" method="post" id="registerForm">
         {% csrf_token %}
         <div class="form-group">
             <input class="form-control" type="email" name="email" placeholder="Email Address">
@@ -19,9 +19,9 @@
         <div class="form-group">
             <input class="form-control" type="password" name="confirmation" placeholder="Confirm Password">
         </div>
-        <input class="btn btn-primary" type="submit" value="Register">
+        <input class="btn btn-danger" type="submit" value="Register" id="registerBtn" class="btn btn-danger">
+        <span>Already have an account? <a href="{% url 'login' %}" class="link-danger link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover">Log In here.</a></span>
     </form>
 
-    Already have an account? <a href="{% url 'login' %}">Log In here.</a>
 
 {% endblock %}

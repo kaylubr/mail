@@ -1,7 +1,75 @@
+body {
+    min-height: 100vh;
+    font-family: "Rubik", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+}
+
+/* Header */
+#currentUser {
+    margin-top: 12px;
+}
+
+/* Login/Register */
+
+#loginHeader,
+#registerHeader {
+    margin-top: 20rem;
+    text-align: center;
+}
+
+#loginForm,
+#registerForm {
+    width: 30%;
+    margin: 0 auto;
+}
+
+#loginBtn,
+#registerBtn {
+    width: 100%;
+}
+
+#loginForm > span,
+#registerForm > span {
+    display: block;
+    margin-top: 12px;
+}
+
 textarea {
     min-height: 400px;
+    resize: none;
+}
+
+/* Email cells */
+.emailCell {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+    font-weight: bold;
+    margin-bottom: 1px;
+}
+
+.emailCell:hover {
+    cursor: pointer;
 }
 
 .hasRead {
-    background-color: rgb(200, 200, 200)
+    background-color: #bababa
+}
+
+/* Email contents */
+
+.emailBody {
+    border: 1px solid rgb(85, 85, 85);
+    padding: 1rem;
+    border-radius: 5px;
+    min-height: 500px;
+    overflow-y: auto;
+}
+
+#emailTimestamp {
+    margin-top: 5px;
+    color: rgb(85, 85, 85);
+    font-size: 0.8rem;
 }

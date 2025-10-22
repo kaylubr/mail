@@ -8,6 +8,26 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // By default, load the inbox
   load_mailbox('inbox');
+
+  const form = document.querySelector('#compose-form');
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const recipients = document.querySelector('#compose-recipients');
+    const subject = document.querySelector('#compose-subject');
+    const body = document.querySelector('#compose-body');
+
+    await fetch('/emails', {
+      method: 'POST',
+      body: JSON.stringify({
+        recipients: recipients.value,
+        subject: subject.value,
+        body: body.value,
+      })
+    });
+    console.log("RUNS");
+    
+    load_mailbox('sent');
+  });
 });
 
 function compose_email(typeOfEmail, mail = null) {
@@ -18,7 +38,6 @@ function compose_email(typeOfEmail, mail = null) {
   document.querySelector('#compose-view').style.display = 'block';
 
   const header = document.querySelector('#compose-view > h3');
-  const form = document.querySelector('#compose-form');
   const recipients = document.querySelector('#compose-recipients');
   const subject = document.querySelector('#compose-subject');
   const body = document.querySelector('#compose-body');
@@ -41,23 +60,10 @@ function compose_email(typeOfEmail, mail = null) {
     recipients.disabled = true;
     subject.value = formatSubject(mail.subject);
     subject.disabled = true;
+    // Resets body
+    body.value = '';
     body.value = `<<< On ${mail.timestamp} ${mail.sender} wrote: ${mail.body} >>>\n\n`;
   }
-  
-  form.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const response = await fetch('/emails', {
-      method: 'POST',
-      body: JSON.stringify({
-        recipients: recipients.value,
-        subject: subject.value,
-        body: body.value,
-      })
-    });
-
-    const data = await response.json(); // Text for status later
-    load_mailbox('inbox');
-  });
 }
 
 async function load_mailbox(mailbox) {
@@ -67,19 +73,30 @@ async function load_mailbox(mailbox) {
   document.querySelector('#email-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'none';
 
+  // Resets
+  document.querySelector('#emails-view').textContent = '';
+
   // Show the mailbox name
   document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
 
   const response = await fetch(`/emails/${mailbox}`);
   const mails = await response.json();
-  mails.forEach(mail => {
-    renderMail(mail);
-  });
+
+  if (mails.length >= 1) {
+    mails.forEach(mail => {
+      renderMail(mail);
+    });
+  } else {
+    const div = document.createElement('div');
+    div.setAttribute('id', 'noEmailStatus');
+    div.textContent = 'No emails.';
+    document.querySelector('#emails-view').append(div);
+  }
 }
 
 function renderMail(mail) {
   const container = document.createElement('div');
-  container.classList.add(mail.read ? 'hasRead' : 'emailRow');
+  container.classList.add(mail.read ? 'hasRead' : 'emailRow', 'emailCell');
 
   const sender = document.createElement('span');
   sender.textContent = mail.sender;
@@ -119,24 +136,27 @@ async function openEmail(id) {
   const container = document.createElement('div');
 
   const sender = document.createElement('p');
-  sender.textContent = mail.sender;
+  sender.innerHTML = `From: <b>${mail.sender}</b>`;
 
   const recipients = document.createElement('p');
-  recipients.textContent = mail.recipients;
+  recipients.innerHTML = `To: <b>${mail.recipients}</b>`;
 
-  const body = document.createElement('p');
+  const body = document.createElement('div');
+  body.classList.add('emailBody')
   body.textContent = mail.body;
 
   const subject = document.createElement('p');
-  subject.textContent = mail.subject;
+  subject.innerHTML = `Subject: <b>${mail.subject}</b>`;
 
   const timestamp = document.createElement('p');
+  timestamp.setAttribute('id', 'emailTimestamp')
   timestamp.textContent = mail.timestamp;
   
   container.append(sender, recipients, subject, body, timestamp);
 
   if (mail.sender !== document.querySelector('#currentUser').textContent) {
     const archiveBtn = document.createElement('button');
+    archiveBtn.classList.add('btn', 'btn-warning');
     archiveBtn.textContent = mail.archived ? 'Unarchive' : 'Archive';
     archiveBtn.addEventListener('click', async () => {
       await fetch(`/emails/${id}`, {
@@ -144,15 +164,19 @@ async function openEmail(id) {
         body: JSON.stringify({ archived: !mail.archived })
       });
       load_mailbox('inbox');
-    });
+    }, { once: true });
 
-    const replyBtn = document.createElement('button');
-    replyBtn.textContent = 'Reply';
-    replyBtn.addEventListener('click', async () => {
-      compose_email('reply', mail);
-    });
+    if (!mail.archived) {
+      const replyBtn = document.createElement('button');
+      replyBtn.classList.add('btn', 'btn-danger', 'mx-1');
+      replyBtn.textContent = 'Reply';
+      replyBtn.addEventListener('click', async () => {
+        compose_email('reply', mail);
+      }, { once: true });
+      container.append(replyBtn);
+    }
 
-    container.append(archiveBtn, replyBtn);
+    container.append(archiveBtn);
   }
 
   emailContainer.append(container);
@@ -162,4 +186,6 @@ function formatSubject(subject) {
   if (!(subject.toLowerCase().startsWith('re: '))) {
     return `Re: ${subject}`;
   }
+  
+  return subject;
 }
