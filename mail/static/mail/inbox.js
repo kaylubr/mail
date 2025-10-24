@@ -24,8 +24,8 @@ document.addEventListener('DOMContentLoaded', function() {
         body: body.value,
       })
     });
-    console.log("RUNS");
-    
+
+    showNotif('Successfully sent the email', 'success');
     load_mailbox('sent');
   });
 });
@@ -164,6 +164,12 @@ async function openEmail(id) {
         body: JSON.stringify({ archived: !mail.archived })
       });
       load_mailbox('inbox');
+
+      if (mail.archived) {
+        showNotif('Successfully unarchived the email.', 'success');
+      } else {
+        showNotif('Successfully archived the email.', 'success');
+      }
     }, { once: true });
 
     if (!mail.archived) {
@@ -188,4 +194,18 @@ function formatSubject(subject) {
   }
   
   return subject;
+}
+
+function showNotif(message, type) {
+  const notif = document.querySelector('#mainNotif');
+  const wrapper = document.createElement('div');
+  wrapper.textContent = message;
+  wrapper.setAttribute('id', 'notifWrapper')
+  wrapper.classList.add(type)
+
+  notif.append(wrapper)
+
+  setTimeout(() => {
+    notif.replaceChildren()
+  }, 3000);
 }

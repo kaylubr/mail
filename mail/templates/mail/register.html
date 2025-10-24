@@ -5,7 +5,7 @@
     <h2 id="registerHeader">Register</h2>
 
     {% if message %}
-        <div>{{ message }}</div>
+        <div id="notif">{{ message }}</div>
     {% endif %}
 
     <form action="{% url 'register' %}" method="post" id="registerForm">
